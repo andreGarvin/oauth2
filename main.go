@@ -37,38 +37,38 @@ type OauthState struct {
 
 // Oauth returns a new the methods initate oauth witha IDP
 type Oauth struct {
-	clientID     string
-	oauthURL     string
-	tokenURL     string
-	callbackURL  string
-	clientSecret string
-	scopes       []string
+	ClientID     string
+	OauthURL     string
+	TokenURL     string
+	CallbackURL  string
+	ClientSecret string
+	Scopes       []string
 }
 
 // New returns the Oauth struct
 func New(clientID, oauthURL, tokenURL, callbackURL, clientSecret string, scopes []string) *Oauth {
 	return &Oauth{
-		scopes:       scopes,
-		clientID:     clientID,
-		oauthURL:     oauthURL,
-		tokenURL:     tokenURL,
-		callbackURL:  callbackURL,
-		clientSecret: clientSecret,
+		Scopes:       scopes,
+		ClientID:     clientID,
+		OauthURL:     oauthURL,
+		TokenURL:     tokenURL,
+		CallbackURL:  callbackURL,
+		ClientSecret: clientSecret,
 	}
 }
 
 // CreateOauthURL returns a formatted oauth url
 func (oauth *Oauth) CreateOauthURL(state string) (string, error) {
-	parsedOauthURL, err := url.Parse(oauth.oauthURL)
+	parsedOauthURL, err := url.Parse(oauth.OauthURL)
 	if err != nil {
 		return "", err
 	}
 
 	query := parsedOauthURL.Query()
 
-	query.Set("scope", strings.Join(oauth.scopes, " "))
-	query.Set("redirect_uri", oauth.callbackURL)
-	query.Set("client_id", oauth.clientID)
+	query.Set("scope", strings.Join(oauth.Scopes, " "))
+	query.Set("redirect_uri", oauth.CallbackURL)
+	query.Set("client_id", oauth.ClientID)
 	query.Set("access_type", "offline")
 	query.Set("response_type", "code")
 	query.Set("prompt", "consent")
@@ -84,14 +84,14 @@ func (oauth *Oauth) FetchAccessToken(accessCode string) (UserOauthToken, error) 
 	var oauthAccessTokenInfo UserOauthToken
 
 	var query url.Values = make(url.Values)
-	query.Set("client_secret", oauth.clientSecret)
+	query.Set("client_secret", oauth.ClientSecret)
 	query.Set("grant_type", "authorization_code")
-	query.Set("redirect_uri", oauth.callbackURL)
-	query.Set("client_id", oauth.clientID)
+	query.Set("redirect_uri", oauth.CallbackURL)
+	query.Set("client_id", oauth.ClientID)
 	query.Set("code_verifier", "")
 	query.Set("code", accessCode)
 
-	err := fetchOauthToken(oauth.tokenURL, query.Encode(), &oauthAccessTokenInfo)
+	err := fetchOauthToken(oauth.TokenURL, query.Encode(), &oauthAccessTokenInfo)
 	if err != nil {
 		return oauthAccessTokenInfo, err
 	}
@@ -104,12 +104,12 @@ func (oauth *Oauth) RefreshAccessToken(refreshToken string) (UserOauthToken, err
 	var oauthAccessTokenInfo UserOauthToken
 
 	var query url.Values = make(url.Values)
-	query.Set("client_secret", oauth.clientSecret)
+	query.Set("client_secret", oauth.ClientSecret)
 	query.Set("refresh_token", refreshToken)
 	query.Set("grant_type", "refresh_token")
-	query.Set("client_id", oauth.clientID)
+	query.Set("client_id", oauth.ClientID)
 
-	err := fetchOauthToken(oauth.tokenURL, query.Encode(), &oauthAccessTokenInfo)
+	err := fetchOauthToken(oauth.TokenURL, query.Encode(), &oauthAccessTokenInfo)
 	if err != nil {
 		return oauthAccessTokenInfo, err
 	}
@@ -143,8 +143,8 @@ func fetchOauthToken(oauthTokenURL string, urlEncodedBody string, val interface{
 	}
 
 	if response.StatusCode != 200 {
-		if response.StatusCode == 400 {
-			return errors.New("oauth: error fetching token, endpoint does not exist")
+		if response.StatusCode == 404 {
+			return errors.New("oauth: error fetching token, token endpoint does not exist")
 		}
 
 		var badRequest struct {

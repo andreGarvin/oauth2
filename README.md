@@ -40,17 +40,6 @@ var port = ":3000"
 
 func main() {
 
-	// creating a instance of the Oauth struct
-	oauth := oauth2.New(
-		// This is a code example, remember to store the oauth client information in your environment variables so you dont save your client secret by accident
-		"place your client id here",
-		"place your oauth url",
-		"place your token url here",
-		// make sure this macthes the on the website where you setup your oauth client
-		"place your application callback url here",
-		"place your client secret here",
-		oauth2.Scopes,
-	)
 
 	// endpoints
 
