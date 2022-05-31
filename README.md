@@ -34,21 +34,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"oauth2"
 )
 
-var port = ":3000"
+var port = ":8080"
 
 func main() {
 
+	var oauth = oauth2.New(
+		"<client id>",
+		"<oauth url>",
+		"<token url>",
+		"http://localhost:8080/oauth/callback",
+		"<client secret>",
+		oauth2.Scopes,
+	)
 
 	// endpoints
 
 	// intitating a oauth login request and redirecting the user to the oauth service provider to authenticate the user on our service
 	http.HandleFunc("/oauth/signin", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("redirecting the user to foobarbaz.com oauth page")
+		fmt.Println("signin: redirecting the user to foobarbaz.com oauth page")
 
 		// getting the formatted oauth url
-		oauthURL, err := oauth.CreateOauthURL(OauthActionSignin)
+		// or instead of using a string literal "sigin" use oauth2.OauthActionSignin, but this generally where state goes
+		oauthURL, err := oauth.CreateOauthURL("sigin")
 		if err != nil {
 			fmt.Printf("error: %v", err)
 
@@ -58,13 +68,14 @@ func main() {
 			return
 		}
 
-		http.Redirect(w, r, oauthURL, 301)
+		fmt.Println(oauthURL)
+		http.Redirect(w, r, oauthURL, http.StatusTemporaryRedirect)
 	})
 
 	// intitating a oauth login request and redirecting the user to the oauth service provider.
 	// but going to set the state of the oauth url to be a oauth action to create a account on our service when it comes back to our service
 	http.HandleFunc("/oauth/create", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("redirecting the user to foobarbaz.com oauth page")
+		fmt.Println("create: redirecting the user to foobarbaz.com oauth page")
 
 		// getting the formatted oauth url
 		oauthURL, err := oauth.CreateOauthURL(oauth2.OauthActionCreateAccount)
@@ -77,7 +88,7 @@ func main() {
 			return
 		}
 
-		http.Redirect(w, r, oauthURL, 301)
+		http.Redirect(w, r, oauthURL, http.StatusTemporaryRedirect)
 	})
 
 	// and for OauthActionAuthorize you can have some authenticated endpoint that will performa action to your app to get access from the other app
