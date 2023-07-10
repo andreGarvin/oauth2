@@ -22,12 +22,9 @@ Then you can start using it
 
 ## Quick start
 
-```sh
-# assume the following codes in example.go file
-$ cat example.go
-```
-
 ```go
+// assuming the following codes in main.go file
+
 package main
 
 import (
